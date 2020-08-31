@@ -70,6 +70,7 @@
     }
 
     Grid.prototype = {
+        finishUpdateOnCancel: false,
         width: "auto",
         height: "auto",
         updateOnResize: true,
@@ -81,6 +82,54 @@
             if(this.editing) {
                 this.editItem($(args.event.target).closest("tr"));
             }
+            var row = $(args.event.target).closest('tr').prev();
+            
+            row.find('select').change(function() {
+                var select = $(this);
+                if (select.attr('data-name') === 'catalog') {
+                    // element
+                    row.find('select[data-name="element"] option').each(function() {
+                        var option = $(this);
+                        option.addClass('hidden_option');
+                        if (option.attr('data-parent')) {
+                            if (option.attr('data-parent').split().includes(select.val())) {
+                                option.removeClass('hidden_option');
+                            }
+                        }
+                    })
+                    //row.find('select[data-name="element"]').val(0);
+                }
+                if (select.attr('data-name') === 'element') {
+                    // type
+                    row.find('select[data-name="type"] option').each(function() {
+                        var option = $(this);
+                        option.addClass('hidden_option');
+                        if (option.attr('data-parent')) {
+                            if (option.attr('data-parent').split().includes(select.val())) {
+                                option.removeClass('hidden_option');
+                            }
+                        }
+                    })
+                    //row.find('select[data-name="type"]').val(0);
+                }
+                if (select.attr('data-name') === 'type') {
+                    // material
+                    row.find('select[data-name="material"] option').each(function() {
+                        var option = $(this);
+                        option.addClass('hidden_option');
+                        if (option.attr('data-parent')) {
+                            if (option.attr('data-parent').split().includes(select.val())) {
+                                option.removeClass('hidden_option');
+                            }
+                        }
+                    })
+                    //row.find('select[data-name="material"]').val(0);
+                }
+            });
+            row.find('select').each(function() {
+                $(this).change();
+            });
+            
         },
         rowDoubleClick: $.noop,
 
@@ -1271,10 +1320,17 @@
             if(!insertingItem)
                 return $.Deferred().reject().promise();
 
-            var args = this._callEventHandler(this.onItemInserting, {
+            var returned = this._callEventHandler(this.onItemInserting, {
                 item: insertingItem
             });
-
+            
+            if (returned.item) {
+                insertingItem = returned.insertingItem;
+            }
+            var args = {};
+            if (returned.args) {
+                args = returned.args;
+            }
             return this._controllerCall("insertItem", insertingItem, args.cancel, function(insertedItem) {
                 insertedItem = insertedItem || insertingItem;
                 this._loadStrategy.finishInsert(insertedItem, this.insertRowLocation);
@@ -1390,7 +1446,11 @@
                 return;
 
             if(this._editingRow) {
-                this.cancelEdit();
+                if (this.finishUpdateOnCancel) {
+                    this._updateRow(this._editingRow, this._getValidatedEditedItem());
+                } else {
+                    this.cancelEdit();
+                }
             }
 
             var $editRow = this._createEditRow(item);
@@ -1429,7 +1489,6 @@
 
             if(!editedItem)
                 return;
-
             return this._updateRow($row, editedItem);
         },
 
@@ -1510,7 +1569,7 @@
             this._editingRow.show();
             this._editingRow = null;
         },
-
+        
         _getEditRow: function() {
             return this._editingRow && this._editingRow.data(JSGRID_EDIT_ROW_DATA_KEY);
         },

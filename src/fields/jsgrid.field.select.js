@@ -97,7 +97,12 @@
                 valueField = this.valueField,
                 textField = this.textField,
                 selectedIndex = this.selectedIndex;
-
+            
+            var $option = $("<option>")
+                    .attr("value", '0')
+                    .text('-')
+                    .appendTo($result);
+            console.log(this.items);
             $.each(this.items, function(index, item) {
                 var value = valueField ? item[valueField] : index,
                     text = textField ? item[textField] : item;
@@ -106,12 +111,13 @@
                     .attr("value", value)
                     .text(text)
                     .appendTo($result);
-
+                if (item.parent) {
+                    $option.attr("data-parent", item.parent.join());
+                }
             });
-
             $result.prop("disabled", !!this.readOnly);
             $result.prop("selectedIndex", selectedIndex);
-			
+            $result.attr('data-name', this.name);
             return $result;
         }
     });
