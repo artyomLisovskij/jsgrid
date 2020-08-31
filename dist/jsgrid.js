@@ -1,5 +1,5 @@
 /*
- * jsGrid v1.5.3 (http://js-grid.com)
+ * jsGrid v1.5.3.1 (http://js-grid.com)
  * (c) 2020 Artem Tabalin
  * Licensed under  ()
  */
@@ -1691,7 +1691,7 @@
         setDefaults: setDefaults,
         locales: locales,
         locale: locale,
-        version: '1.5.3'
+        version: '1.5.3.1'
     };
 
 }(window, jQuery));
