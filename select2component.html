@@ -1,0 +1,173 @@
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <div id="jsGrid"></div>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <link href="./dist/jsgrid.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+  <script src="./dist/jsgrid.min.js"></script>
+  <script>
+    var MultiselectField = function (config) {
+      jsGrid.Field.call(this, config);
+    };
+
+    MultiselectField.prototype = new jsGrid.Field({
+
+      items: [],
+      textField: "",
+
+      _codeListToWords: function (codes) {
+        return this.items.filter(item =>
+          codes.reduce((status, code) => status || code === item.code, false)
+        ).map(item => item.name)
+      },
+      _wordToCode: function (word) {
+        return this.items.find(item => item.name === word);
+      },
+
+      itemTemplate: function (value) {
+        console.log('itemTemplate', value);
+        return this._codeListToWords($.makeArray(value)).join(", ");
+      },
+
+      _createSelect: function (selected) {
+        selected = this._codeListToWords($.makeArray(selected));
+        var textField = this.textField;
+        var $result = $("<select>").prop("multiple", true);
+
+        $.each(this.items, function (_, item) {
+          var value = item[textField];
+          var $opt = $("<option>").text(value);
+          if ($.inArray(value, selected) > -1) {
+
+            $opt.attr("selected", "selected");
+          }
+
+          $result.append($opt);
+        });
+        
+        let $wrapResult = $('<div></div>').append($result);
+        $result = $result.select2({
+          width: 187,
+        });
+  
+        return $wrapResult;
+      },
+
+      insertTemplate: function () {
+        console.log('insertTemplate');
+        var insertControl = this._insertControl = this._createSelect();
+        return insertControl;
+      },
+
+      editTemplate: function (value) {
+        console.log('editTemplate', value);
+        var editControl = this._editControl = this._createSelect(value);
+        return editControl;
+      },
+
+      insertValue: function () {
+        let t = this._insertControl.find("option:selected").map(function () {
+          return this.selected ? $(this).text() : null;
+        })
+        console.log('editInsert', t);
+        return this._insertControl.find("option:selected").map(function () {
+          return this.selected ? $(this).text() : null;
+        });
+      },
+
+      editValue: function () {
+        let buf = this._editControl.find("option:selected").map(function () {
+          return this.selected ? $(this).text() : null;
+        });
+        $.each(buf, (index, word) => {
+          let valueInfo = this._wordToCode(word);
+          buf[index] = valueInfo.code;
+        })
+        return buf;
+      }
+    });
+
+    jsGrid.fields.multiselect = MultiselectField;
+
+    $("#jsGrid").jsGrid({
+      height: "90%",
+      width: "100%",
+
+      finishUpdateOnCancel: true,
+      filtering: true,
+      editing: true,
+      sorting: true,
+      inserting: true,
+      pageSize: 1500,
+      autoload: true,
+
+      //controller: db,
+      data: JSON.parse('[{"id": 100000000000, "catalog": 3, "element": 20, "type": 31, "material": [11,17], "place": 9, "amount": 0, "mark": 1000, "note": "323", "order_mark": 10000},\
+     {"id": 21626, "catalog": 2, "element": 29, "type": "", "material": [], "place": "", "amount": 0, "mark": "", "note": "", "order_mark": 121},\
+      {"id": 18228, "catalog": 2, "element": 29, "type": 31, "material": [11], "place": 9, "amount": 0, "mark": 3, "note": "ии", "order_mark": 2},\
+       {"id": 18232, "catalog": 3, "element": 20, "type": 17, "material": [20], "place": 12, "amount": 0, "mark": 3, "note": "", "order_mark": -1},\
+        {"id": 18233, "catalog": 3, "element": 20, "type": 31, "material": [29], "place": 9, "amount": 0, "mark": 3, "note": "re", "order_mark": 1},\
+         {"id": 18212, "catalog": 1, "element": 3, "type": 109, "material": [], "place": "", "amount": 0, "mark": "", "note": "Ооорприпп", "order_mark": -1},\
+          {"id": 18229, "catalog": 3, "element": 20, "type": 31, "material": [30], "place": 9, "amount": 0, "mark": 3, "note": "", "order_mark": 0},\
+           {"id": 18230, "catalog": 3, "element": 50, "type": 31, "material": [11], "place": 9, "amount": 0, "mark": 3, "note": "   тиититириори", "order_mark": 0},\
+            {"id": 18235, "catalog": 3, "element": 20, "type": 17, "material": [30], "place": 12, "amount": 0, "mark": 3, "note": "re", "order_mark": 1},\
+            {"id": 18231, "catalog": 3, "element": 20, "type": 43, "material": [23], "place": 9, "amount": 0, "mark": 3, "note": "тттьлдл", "order_mark": 0}]'),
+
+      fields: [
+        { title: "", name: "add" },
+        { title: "Сортировка", name: "order_mark", type: "sort" },
+        { title: "ID", name: "id", readOnly: true, visible: false, width: 0 },
+        { title: "Каталог обследования", insertTemplate: () => { }, name: "catalog", items: JSON.parse('[{"name": "Входные группы", "code": 3, "connected": "element"}, {"name": "Фундамент", "code": 1, "connected": "element"}, {"name": "Цоколь", "code": 2, "connected": "element"}, {"name": "Перекрытия", "code": 5, "connected": "element"}, {"name": "Кровля", "code": 6, "connected": "element"}, {"name": "Помещения", "code": 7, "connected": "element"}, {"name": "Лестничные марши", "code": 8, "connected": "element"}, {"name": "Коридоры", "code": 9, "connected": "element"}, {"name": "Технические этажи", "code": 10, "connected": "element"}, {"name": "Чердаки", "code": 11, "connected": "element"}, {"name": "Технические подвалы", "code": 12, "connected": "element"}, {"name": "Инженерно-техническое оборудование", "code": 13, "connected": "element"}, {"name": "Земельный участок", "code": 14, "connected": "element"}, {"name": "Наружные стены", "code": 4, "connected": "element"}]'), valueField: "code", textField: "name" },
+        { title: "Элемент обследования", name: "element", type: "select", items: JSON.parse('[{"name": "Остекление", "code": 20, "parent": [], "connected": "type"}, {"name": "Лифтовая шахта", "code": 29, "parent": [], "connected": "type"}, {"name": "Вентиляционная труба", "code": 39, "parent": [], "connected": "type"}, {"name": "ВРУ электроснабжения", "code": 40, "parent": [], "connected": "type"}, {"name": "Утепление", "code": 45, "parent": [], "connected": "type"}, {"name": "Котел водонагревания", "code": 46, "parent": [], "connected": "type"}, {"name": "ЦТП", "code": 48, "parent": [], "connected": "type"}, {"name": "ИТП", "code": 49, "parent": [], "connected": "type"}, {"name": "Элеваторный узел", "code": 50, "parent": [], "connected": "type"}, {"name": "Радиатор", "code": 51, "parent": [], "connected": "type"}, {"name": "Теплый пол", "code": 53, "parent": [], "connected": "type"}, {"name": "Система водоочистки", "code": 54, "parent": [], "connected": "type"}, {"name": "Прибор учета", "code": 60, "parent": [], "connected": "type"}, {"name": "Твердые покрытия", "code": 64, "parent": [], "connected": "type"}, {"name": "Деревья", "code": 66, "parent": [], "connected": "type"}, {"name": "Кустарники", "code": 67, "parent": [], "connected": "type"}, {"name": "Ограждение", "code": 68, "parent": [], "connected": "type"}, {"name": "Скамейка", "code": 69, "parent": [], "connected": "type"}, {"name": "Площадка ТБО", "code": 70, "parent": [], "connected": "type"}, {"name": "Детская площадка", "code": 71, "parent": [], "connected": "type"}, {"name": "Малые архитектурные формы", "code": 72, "parent": [], "connected": "type"}, {"name": "Люки", "code": 73, "parent": [], "connected": "type"}, {"name": "Приемные колодцы", "code": 74, "parent": [], "connected": "type"}, {"name": "Ливневая сеть", "code": 91, "parent": [4], "connected": "type"}, {"name": "Выход на кровлю", "code": 84, "parent": [6], "connected": "type"}, {"name": "Указатель", "code": 10, "parent": [4], "connected": "type"}, {"name": "Сантехнические приборы", "code": 55, "parent": [7, 9], "connected": "type"}, {"name": "Флагодержатель", "code": 11, "parent": [4], "connected": "type"}, {"name": "Наличие разметки ММ", "code": 94, "parent": [7], "connected": "type"}, {"name": "Материал стен", "code": 22, "parent": [7, 9], "connected": "type"}, {"name": "Фундамент", "code": 3, "parent": [1], "connected": "type"}, {"name": "Цоколь", "code": 4, "parent": [2], "connected": "type"}, {"name": "Отмостка", "code": 81, "parent": [2], "connected": "type"}, {"name": "Двери", "code": 18, "parent": [3, 7, 9], "connected": "type"}, {"name": "Продух", "code": 5, "parent": [2], "connected": "type"}, {"name": "Водосточная воронка", "code": 14, "parent": [], "connected": "type"}, {"name": "Материал отделки стен", "code": 92, "parent": [7, 9], "connected": "type"}, {"name": "Лифт", "code": 34, "parent": [13], "connected": "type"}, {"name": "Выступающий элемент", "code": 8, "parent": [4], "connected": "type"}, {"name": "Перекрытие", "code": 15, "parent": [5], "connected": "type"}, {"name": "Пожарная лестница", "code": 9, "parent": [4], "connected": "type"}, {"name": "Отделка", "code": 24, "parent": [], "connected": "type"}, {"name": "Кровля", "code": 16, "parent": [6], "connected": "type"}, {"name": "Сети горячего водоснабжения", "code": 59, "parent": [13], "connected": "type"}, {"name": "Ограждение кровли", "code": 17, "parent": [6], "connected": "type"}, {"name": "Инженерные коммуникации", "code": 85, "parent": [10, 11, 12], "connected": "type"}, {"name": "Материал отделки потолков", "code": 26, "parent": [9, 7], "connected": "type"}, {"name": "Мусоропровод", "code": 35, "parent": [13], "connected": "type"}, {"name": "Ограждение лестницы", "code": 32, "parent": [], "connected": "type"}, {"name": "Требование пожарной безопасности", "code": 33, "parent": [10, 11, 12], "connected": "type"}, {"name": "Полы", "code": 25, "parent": [], "connected": "type"}, {"name": "Водосточная труба", "code": 13, "parent": [], "connected": "type"}, {"name": "Входные группы", "code": 6, "parent": [3], "connected": "type"}, {"name": "Вентиляция", "code": 36, "parent": [13], "connected": "type"}, {"name": "Движимое или технологическое имущество", "code": 27, "parent": [], "connected": "type"}, {"name": "Санитарное состояние", "code": 28, "parent": [], "connected": "type"}, {"name": "Сигнализация", "code": 61, "parent": [13], "connected": "type"}, {"name": "Сети теплоснабжения", "code": 44, "parent": [13], "connected": "type"}, {"name": "Кондиционер", "code": 37, "parent": [], "connected": "type"}, {"name": "Транзитные коммуникации", "code": 30, "parent": [7, 9], "connected": "type"}, {"name": "иные строения", "code": 89, "parent": [14], "connected": "type"}, {"name": "Насос", "code": 56, "parent": [13], "connected": "type"}, {"name": "Дымовая труба", "code": 38, "parent": [], "connected": "type"}, {"name": "Озеленение", "code": 65, "parent": [14], "connected": "type"}, {"name": "Сети электроснабжения", "code": 43, "parent": [13], "connected": "type"}, {"name": "Сети холодного водоснабжения", "code": 57, "parent": [13], "connected": "type"}, {"name": "Система дымоудаления", "code": 42, "parent": [13], "connected": "type"}, {"name": "пожарный водопровод", "code": 58, "parent": [13], "connected": "type"}, {"name": "Ливневая канализация", "code": 75, "parent": [], "connected": "type"}, {"name": "Сети канализации", "code": 62, "parent": [13], "connected": "type"}, {"name": "Сети газоснабжения", "code": 63, "parent": [13], "connected": "type"}, {"name": "Водосточный желоб", "code": 12, "parent": [], "connected": "type"}, {"name": "Инженерное оборудование", "code": 86, "parent": [10, 11, 12], "connected": "type"}, {"name": "Хол", "code": 90, "parent": [], "connected": "type"}, {"name": "Элементы благоустройства", "code": 88, "parent": [14], "connected": "type"}, {"name": "Отмостка", "code": 82, "parent": [], "connected": "type"}, {"name": "Материал отделки полов", "code": 93, "parent": [7, 9], "connected": "type"}, {"name": "Доступ", "code": 21, "parent": [3], "connected": "type"}, {"name": "Наружная реклама", "code": 83, "parent": [], "connected": "type"}, {"name": "Фасад", "code": 7, "parent": [4], "connected": "type"}, {"name": "Материал перегородок", "code": 23, "parent": [7, 9], "connected": "type"}, {"name": "Наличие барьеров ММ", "code": 95, "parent": [7], "connected": "type"}, {"name": "Наличие ТБО", "code": 96, "parent": [7], "connected": "type"}, {"name": "Имущество", "code": 87, "parent": [7, 9, 10, 11, 12], "connected": "type"}, {"name": "Электрооборудование", "code": 97, "parent": [7, 9], "connected": "type"}, {"name": "Окна", "code": 19, "parent": [7, 9], "connected": "type"}, {"name": "Лестничный марш", "code": 31, "parent": [8], "connected": "type"}, {"name": "Иное", "code": 98, "parent": [13], "connected": "type"}, {"name": "Покрытие", "code": 99, "parent": [14], "connected": "type"}]'), valueField: "code", textField: "name" },
+        { title: "Вид или состояние элемента обследования", name: "type", type: "select", items: JSON.parse('[{"name": "электросеть", "code": 31, "parent": [85, 30], "connected": "material"}, {"name": "рабочее", "code": 7, "parent": [], "connected": "material"}, {"name": "отключено", "code": 8, "parent": [], "connected": "material"}, {"name": "не определено", "code": 17, "parent": [3, 59, 61, 44, 30, 56, 43, 57, 42, 62, 63], "connected": "material"}, {"name": "____", "code": 110, "parent": [10, 11, 94, 22, 4, 81, 5, 92, 15, 9, 17, 26, 33, 89, 93, 7, 23, 95, 19, 31, 99], "connected": "material"}, {"name": "газ", "code": 33, "parent": [85], "connected": "material"}, {"name": "пологоскатная", "code": 19, "parent": [], "connected": "material"}, {"name": "односкатная", "code": 20, "parent": [], "connected": "material"}, {"name": "двускатная", "code": 21, "parent": [], "connected": "material"}, {"name": "мансардная", "code": 22, "parent": [], "connected": "material"}, {"name": "вальмовая", "code": 23, "parent": [], "connected": "material"}, {"name": "полувальмовая", "code": 24, "parent": [], "connected": "material"}, {"name": "шатровая", "code": 25, "parent": [], "connected": "material"}, {"name": "ендовая", "code": 26, "parent": [], "connected": "material"}, {"name": "купольная", "code": 27, "parent": [], "connected": "material"}, {"name": "вентиляция", "code": 34, "parent": [85], "connected": "material"}, {"name": "вент.агрегат", "code": 43, "parent": [86], "connected": "material"}, {"name": "ПВС", "code": 30, "parent": [], "connected": "material"}, {"name": "пас.", "code": 47, "parent": [], "connected": "material"}, {"name": "грузовой", "code": 48, "parent": [], "connected": "material"}, {"name": "г/пасс.", "code": 49, "parent": [], "connected": "material"}, {"name": "потолочные", "code": 51, "parent": [], "connected": "material"}, {"name": "настенные", "code": 52, "parent": [], "connected": "material"}, {"name": "точечные", "code": 53, "parent": [], "connected": "material"}, {"name": "токопроводящяя шина", "code": 54, "parent": [], "connected": "material"}, {"name": "напольные", "code": 55, "parent": [], "connected": "material"}, {"name": "задвижка", "code": 56, "parent": [], "connected": "material"}, {"name": "вентиль", "code": 57, "parent": [], "connected": "material"}, {"name": "кран", "code": 58, "parent": [], "connected": "material"}, {"name": "шибер", "code": 59, "parent": [], "connected": "material"}, {"name": "кожухотрубный", "code": 60, "parent": [], "connected": "material"}, {"name": "пластинчатый", "code": 61, "parent": [], "connected": "material"}, {"name": "механическая", "code": 62, "parent": [], "connected": "material"}, {"name": "ультрафиолетовая", "code": 63, "parent": [], "connected": "material"}, {"name": "сорбционная", "code": 64, "parent": [], "connected": "material"}, {"name": "проточная", "code": 65, "parent": [], "connected": "material"}, {"name": "мембранная", "code": 66, "parent": [], "connected": "material"}, {"name": "теплосчетчик", "code": 68, "parent": [], "connected": "material"}, {"name": "охранная", "code": 69, "parent": [], "connected": "material"}, {"name": "пожарная", "code": 70, "parent": [], "connected": "material"}, {"name": "тревожная", "code": 71, "parent": [], "connected": "material"}, {"name": "кронирование", "code": 72, "parent": [], "connected": "material"}, {"name": "аварийное", "code": 73, "parent": [], "connected": "material"}, {"name": "обрезка", "code": 74, "parent": [], "connected": "material"}, {"name": "приточнакя", "code": 75, "parent": [], "connected": "material"}, {"name": "принудительная", "code": 78, "parent": [], "connected": "material"}, {"name": "газовый", "code": 80, "parent": [], "connected": "material"}, {"name": "электрический", "code": 81, "parent": [], "connected": "material"}, {"name": "автономная", "code": 82, "parent": [], "connected": "material"}, {"name": "напорная", "code": 83, "parent": [], "connected": "material"}, {"name": "блок кондиционера", "code": 44, "parent": [86], "connected": "material"}, {"name": "эл.шкаф", "code": 45, "parent": [86], "connected": "material"}, {"name": "шкаф упр.автоматикой", "code": 46, "parent": [86], "connected": "material"}, {"name": "иное", "code": 35, "parent": [91, 3, 34, 8, 59, 6, 61, 44, 56, 65, 43, 57, 42, 58, 62, 63, 86, 87], "connected": "material"}, {"name": "подъемник", "code": 50, "parent": [34], "connected": "material"}, {"name": "естественная", "code": 77, "parent": [36], "connected": "material"}, {"name": "вытяжная", "code": 79, "parent": [36], "connected": "material"}, {"name": "приточновытяжная", "code": 76, "parent": [36], "connected": "material"}, {"name": "двухвентильный", "code": 92, "parent": [], "connected": "material"}, {"name": "однорычажный", "code": 93, "parent": [], "connected": "material"}, {"name": "сенсорный", "code": 94, "parent": [], "connected": "material"}, {"name": "встраиваемый", "code": 95, "parent": [], "connected": "material"}, {"name": "не подключен", "code": 96, "parent": [59, 61, 44, 43, 57, 42, 58, 62], "connected": "material"}, {"name": "дренаж", "code": 67, "parent": [91, 56], "connected": "material"}, {"name": "пандус", "code": 111, "parent": [6], "connected": "material"}, {"name": "без отделки", "code": 1, "parent": [], "connected": "material"}, {"name": "крыльцо", "code": 112, "parent": [6], "connected": "material"}, {"name": "свайный", "code": 13, "parent": [3], "connected": "material"}, {"name": "не рабочее", "code": 9, "parent": [], "connected": "material"}, {"name": "ленточный", "code": 109, "parent": [3], "connected": "material"}, {"name": "столбчатый", "code": 11, "parent": [3], "connected": "material"}, {"name": "однопольные", "code": 4, "parent": [18], "connected": "material"}, {"name": "Ступени", "code": 108, "parent": [], "connected": "material"}, {"name": "плавающий", "code": 15, "parent": [], "connected": "material"}, {"name": "Тамбур", "code": 106, "parent": [6], "connected": "material"}, {"name": "монолит", "code": 12, "parent": [3], "connected": "material"}, {"name": "через третьих лиц", "code": 116, "parent": [21], "connected": "material"}, {"name": "двупольные", "code": 5, "parent": [18], "connected": "material"}, {"name": "винтовой", "code": 16, "parent": [], "connected": "material"}, {"name": "полуторные", "code": 6, "parent": [18], "connected": "material"}, {"name": "плитный", "code": 14, "parent": [], "connected": "material"}, {"name": "сейфовые", "code": 2, "parent": [18], "connected": "material"}, {"name": "полуподвал", "code": 113, "parent": [6], "connected": "material"}, {"name": "противопожарные", "code": 3, "parent": [18], "connected": "material"}, {"name": "холл", "code": 114, "parent": [6], "connected": "material"}, {"name": "свободный", "code": 115, "parent": [21], "connected": "material"}, {"name": "Пандус", "code": 107, "parent": [], "connected": "material"}, {"name": "через жилищник", "code": 117, "parent": [21], "connected": "material"}, {"name": "охрана ДГИ", "code": 118, "parent": [21], "connected": "material"}, {"name": "карниз", "code": 119, "parent": [8], "connected": "material"}, {"name": "барельеф", "code": 120, "parent": [8], "connected": "material"}, {"name": "балюстрада", "code": 121, "parent": [8], "connected": "material"}, {"name": "балкон", "code": 122, "parent": [8], "connected": "material"}, {"name": "эркер", "code": 123, "parent": [8], "connected": "material"}, {"name": "арх.элементы", "code": 124, "parent": [8], "connected": "material"}, {"name": "наружная", "code": 125, "parent": [91], "connected": "material"}, {"name": "внутренняя", "code": 126, "parent": [91], "connected": "material"}, {"name": "плоская", "code": 18, "parent": [16], "connected": "material"}, {"name": "мебель", "code": 36, "parent": [87], "connected": "material"}, {"name": "быт.техника", "code": 37, "parent": [87], "connected": "material"}, {"name": "орг.техника", "code": 38, "parent": [87], "connected": "material"}, {"name": "кондиционер", "code": 39, "parent": [87], "connected": "material"}, {"name": "стройматериал", "code": 40, "parent": [87], "connected": "material"}, {"name": "инструмент", "code": 41, "parent": [87], "connected": "material"}, {"name": "инж.оборудование", "code": 42, "parent": [87], "connected": "material"}, {"name": "на рельеф", "code": 127, "parent": [91], "connected": "material"}, {"name": "элеваторный узел", "code": 165, "parent": [44], "connected": "material"}, {"name": "эксплкатируемая", "code": 129, "parent": [16], "connected": "material"}, {"name": "скатная", "code": 130, "parent": [16], "connected": "material"}, {"name": "слуховое окно", "code": 132, "parent": [84], "connected": "material"}, {"name": "наружная лестница", "code": 133, "parent": [84], "connected": "material"}, {"name": "радиатор", "code": 166, "parent": [44], "connected": "material"}, {"name": "люк", "code": 134, "parent": [84], "connected": "material"}, {"name": "надстройка", "code": 135, "parent": [84], "connected": "material"}, {"name": "дверь", "code": 136, "parent": [84], "connected": "material"}, {"name": "полотенцесушитель", "code": 167, "parent": [44], "connected": "material"}, {"name": "отсутствует", "code": 128, "parent": [91, 55, 59, 61, 44, 30, 56, 43, 57, 42, 58, 62, 63], "connected": "material"}, {"name": "отопительный", "code": 168, "parent": [56], "connected": "material"}, {"name": "светильник", "code": 143, "parent": [97], "connected": "material"}, {"name": "люстра", "code": 144, "parent": [97], "connected": "material"}, {"name": "розетка", "code": 145, "parent": [97], "connected": "material"}, {"name": "эл. щит", "code": 146, "parent": [97], "connected": "material"}, {"name": "поддон", "code": 147, "parent": [55], "connected": "material"}, {"name": "душевая кабина", "code": 148, "parent": [55], "connected": "material"}, {"name": "мойка", "code": 149, "parent": [55], "connected": "material"}, {"name": "раковина", "code": 150, "parent": [55], "connected": "material"}, {"name": "унитаз", "code": 151, "parent": [55], "connected": "material"}, {"name": "ГВС", "code": 139, "parent": [85, 30, 56], "connected": "material"}, {"name": "бидэ", "code": 152, "parent": [55], "connected": "material"}, {"name": "умывальник", "code": 153, "parent": [55], "connected": "material"}, {"name": "ХВС", "code": 141, "parent": [85, 30, 56], "connected": "material"}, {"name": "противопожарное водоснабжение", "code": 140, "parent": [85, 30, 56], "connected": "material"}, {"name": "отопление", "code": 142, "parent": [85, 30], "connected": "material"}, {"name": "дерево", "code": 169, "parent": [65], "connected": "material"}, {"name": "слаботочные системы", "code": 32, "parent": [85, 30], "connected": "material"}, {"name": "пасажирский", "code": 154, "parent": [34], "connected": "material"}, {"name": "грузовой", "code": 155, "parent": [34], "connected": "material"}, {"name": "грузо-пассажирский", "code": 156, "parent": [34], "connected": "material"}, {"name": "автономный лифт", "code": 157, "parent": [34], "connected": "material"}, {"name": "кустарник", "code": 170, "parent": [65], "connected": "material"}, {"name": "да", "code": 137, "parent": [35, 96], "connected": "material"}, {"name": "нет", "code": 138, "parent": [35, 96], "connected": "material"}, {"name": "чиллер-фанкойл", "code": 158, "parent": [36], "connected": "material"}, {"name": "центральное кондиционирование", "code": 159, "parent": [36], "connected": "material"}, {"name": "ВРУ", "code": 161, "parent": [43], "connected": "material"}, {"name": "ограждение", "code": 171, "parent": [88], "connected": "material"}, {"name": "скамейки", "code": 172, "parent": [88], "connected": "material"}, {"name": "столы", "code": 173, "parent": [88], "connected": "material"}, {"name": "МАФ", "code": 174, "parent": [88], "connected": "material"}, {"name": "подключено", "code": 160, "parent": [59, 61, 44, 43, 57, 42, 58, 62, 63], "connected": "material"}, {"name": "Площадка ТБО", "code": 175, "parent": [88], "connected": "material"}, {"name": "прибор учета", "code": 163, "parent": [59, 44, 43, 57, 62, 63], "connected": "material"}, {"name": "теплообменник", "code": 164, "parent": [44], "connected": "material"}, {"name": "смеситель", "code": 176, "parent": [55], "connected": "material"}, {"name": "канализация", "code": 177, "parent": [30], "connected": "material"}]'), valueField: "code", textField: "name" },
+        { title: "Материал элемента обследования", width: '114px', name: "material", type: "multiselect", items: JSON.parse('[{"name": "пластик", "code": 11, "parent": []}, {"name": "фотообои", "code": 17, "parent": []}, {"name": "тканевые", "code": 18, "parent": []}, {"name": "джутовые", "code": 19, "parent": []}, {"name": "акриловые", "code": 20, "parent": []}, {"name": "стеклообои", "code": 21, "parent": []}, {"name": "пробковые", "code": 22, "parent": []}, {"name": "жидкие", "code": 23, "parent": []}, {"name": "3Д", "code": 29, "parent": []}, {"name": "ГКЛ", "code": 30, "parent": []}, {"name": "мозаика", "code": 31, "parent": []}, {"name": "мембранная", "code": 40, "parent": []}, {"name": "наливная", "code": 41, "parent": []}, {"name": "нержавейка", "code": 42, "parent": []}, {"name": "оцинкованный", "code": 43, "parent": []}, {"name": "профлист", "code": 47, "parent": []}, {"name": "краска", "code": 48, "parent": []}, {"name": "кер.плитка", "code": 53, "parent": []}, {"name": "клинкерная плитка", "code": 15, "parent": [4, 7]}, {"name": "шумоизоляция", "code": 69, "parent": [26]}, {"name": "паркет", "code": 63, "parent": []}, {"name": "побелка", "code": 51, "parent": [26]}, {"name": "бум.обои", "code": 16, "parent": [92, 24, 26]}, {"name": "деревянный", "code": 1, "parent": [22, 81, 18, 92, 15, 26, 32, 25, 93, 23, 19, 98, 99]}, {"name": "дек.штукатурка", "code": 24, "parent": [92]}, {"name": "кирпич", "code": 2, "parent": [22, 4, 7, 23]}, {"name": "ламинат", "code": 52, "parent": [93]}, {"name": "гипсокартон", "code": 3, "parent": [92, 26, 23]}, {"name": "краска", "code": 25, "parent": [4, 92, 24, 26, 93, 7]}, {"name": "бетон", "code": 4, "parent": [22, 4, 81, 25, 82, 93, 23]}, {"name": "пеноблок", "code": 5, "parent": [22, 23]}, {"name": "плитка", "code": 26, "parent": [4, 92, 24, 93]}, {"name": "металл", "code": 6, "parent": [51, 68, 18, 9, 17, 32, 6, 44, 57, 58, 63]}, {"name": "иное", "code": 54, "parent": [20, 51, 84, 55, 22, 3, 4, 81, 18, 92, 15, 9, 24, 16, 59, 17, 26, 25, 6, 36, 27, 61, 56, 86, 82, 93, 21, 7, 23, 87, 97, 19, 31]}, {"name": "асфальт", "code": 7, "parent": [81, 82, 99]}, {"name": "ПВХ", "code": 27, "parent": [18, 92, 24, 19]}, {"name": "штукатурка", "code": 14, "parent": [4, 92, 24, 26, 7]}, {"name": "МДФ", "code": 28, "parent": [92]}, {"name": "газон", "code": 8, "parent": [99]}, {"name": "подвесные армстронг", "code": 55, "parent": [26]}, {"name": "грунт", "code": 9, "parent": [81, 82, 99]}, {"name": "шифер", "code": 32, "parent": [16]}, {"name": "стекло", "code": 10, "parent": [7]}, {"name": "керамогранит", "code": 12, "parent": [4, 81, 92, 24, 93, 7]}, {"name": "ондулин", "code": 33, "parent": [16]}, {"name": "дек.камень", "code": 13, "parent": [4, 92, 24, 93]}, {"name": "паркет", "code": 56, "parent": [93]}, {"name": "профнастил", "code": 34, "parent": [16]}, {"name": "наливные", "code": 57, "parent": [25]}, {"name": "кер.черепица", "code": 35, "parent": [16]}, {"name": "мет.черепица", "code": 36, "parent": [16]}, {"name": "ковровое покрытие", "code": 58, "parent": [93]}, {"name": "мягк.черепица", "code": 37, "parent": [16]}, {"name": "рул.наплавляемая", "code": 39, "parent": [16]}, {"name": "аллюминий", "code": 59, "parent": [51, 18, 23, 19]}, {"name": "фальцевая стальная", "code": 38, "parent": [16]}, {"name": "чугун", "code": 44, "parent": [51, 62]}, {"name": "полипропилен", "code": 60, "parent": [59, 57, 58, 62]}, {"name": "биметалл", "code": 45, "parent": [51]}, {"name": "сайдинг", "code": 46, "parent": [4, 7]}, {"name": "без отделки", "code": 61, "parent": [4, 92, 24, 26, 93]}, {"name": "линолеум", "code": 50, "parent": [93]}, {"name": "сталь", "code": 62, "parent": [51, 59, 57, 58]}, {"name": "реечные пластик", "code": 64, "parent": [26]}, {"name": "реечные аллюминий", "code": 65, "parent": [26]}, {"name": "металлопласт", "code": 66, "parent": [59, 57]}, {"name": "железобетонное", "code": 49, "parent": [22, 3, 15, 31]}, {"name": "бетонные панели", "code": 68, "parent": [7]}]'), valueField: "code", textField: "name" },
+        { title: "Расположение элемента обследования", name: "place", type: "select", items: JSON.parse('[{"name": "1 этаж", "code": 9}, {"name": "2 этаж", "code": 10}, {"name": "3 этаж", "code": 11}, {"name": "4 этаж", "code": 12}, {"name": "5 этаж", "code": 13}, {"name": "подвал", "code": 14}]'), valueField: "code", textField: "name" },
+        { title: "Количество", name: "amount", type: "number" },
+        { title: "Оценка", name: "mark", type: "select", items: JSON.parse('[{"name": "удовлетворительно", "code": 3}, {"name": "неудовлетворительно", "code": 2}, {"name": "отсутствует", "code": 4}]'), valueField: "code", textField: "name" },
+        { title: "Описание", name: "note", type: "textarea" },
+        { type: "control" }
+      ],
+
+      onItemInserting: function (args) {
+        args.item.id = main_id;
+        $.ajax({
+          type: 'POST',
+          url: '/new_report',
+          data: args.item,
+          success: function (result) {
+            args.item.id = result.id
+            return args;
+          }
+        });
+      },
+      onItemUpdated: function (args) {
+        console.log(args);
+        /*$.ajax({
+          type: 'POST',
+          url: '/edit_report',
+          data: args.item
+        });*/
+      },
+      onItemDeleted: function (args) {
+        $.ajax({
+          type: 'POST',
+          url: '/delete_report',
+          data: {
+            id: args.item.id
+          }
+        });
+      },
+    });
+    $("#jsGrid").jsGrid("sort", { field: "order_mark", order: "desc" });
+  </script>
+</body>
+
+</html>
