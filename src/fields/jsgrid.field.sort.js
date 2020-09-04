@@ -40,7 +40,7 @@
             var grid = this._grid;
             var $result = [
                 $("<span class='arrow'>Вверх</span>").on("click", function(e) {
-                    item.order_mark = value + 1;
+                    item.order_mark = +value + 1;
                     grid.updateItem(item);
                     grid.sort('order_mark', 'desc');
                     e.stopPropagation();
