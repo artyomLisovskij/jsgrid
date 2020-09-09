@@ -16,6 +16,7 @@
         inserting: false,
         editing: false,
         sorting: false,
+        addButton: true,
 
         buttonClass: "jsgrid-button",
         modeButtonClass: "jsgrid-mode-button",
@@ -74,7 +75,7 @@
             if(hasInserting && !hasFiltering)
                 return this._createInsertSwitchButton();
 
-            return this._createModeSwitchButton();
+            return this.addButton ? this._createModeSwitchButton() : '';
         },
 
         itemTemplate: function(value, item) {
