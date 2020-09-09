@@ -9,6 +9,10 @@
     Buttons.prototype = new Field({
         filtering: false,
         editing: false,
+        
+        sorter: function (i,ii) {
+          return i - ii;
+        },
         insertTemplate: function() {
             if(!this.inserting)
                 return "";
