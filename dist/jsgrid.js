@@ -1331,7 +1331,7 @@
             });
             
             if (returned.item) {
-                insertingItem = returned.insertingItem;
+                insertingItem = returned.item;
             }
             var args = {};
             if (returned.args) {
@@ -2550,6 +2550,7 @@
         inserting: false,
         editing: false,
         sorting: false,
+        addButton: true,
 
         buttonClass: "jsgrid-button",
         modeButtonClass: "jsgrid-mode-button",
@@ -2608,7 +2609,7 @@
             if(hasInserting && !hasFiltering)
                 return this._createInsertSwitchButton();
 
-            return this._createModeSwitchButton();
+            return this.addButton ? this._createModeSwitchButton() : '';
         },
 
         itemTemplate: function(value, item) {
@@ -2768,6 +2769,10 @@
     Buttons.prototype = new Field({
         filtering: false,
         editing: false,
+        
+        sorter: function (i,ii) {
+          return i - ii;
+        },
         insertTemplate: function() {
             if(!this.inserting)
                 return "";
@@ -2799,7 +2804,7 @@
             var grid = this._grid;
             var $result = [
                 $("<span class='arrow'>Вверх</span>").on("click", function(e) {
-                    item.order_mark = value + 1;
+                    item.order_mark = +value + 1;
                     grid.updateItem(item);
                     grid.sort('order_mark', 'desc');
                     e.stopPropagation();

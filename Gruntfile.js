@@ -49,7 +49,6 @@
                     "src/fields/jsgrid.field.checkbox.js",
                     "src/fields/jsgrid.field.control.js",
                     "src/fields/jsgrid.field.sort.js",
-                    "src/fields/jsgrid.field.multiselect.js"
                 ],
                 dest: "dist/<%= pkg.name %>.js"
             },
