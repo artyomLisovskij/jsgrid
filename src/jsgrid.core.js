@@ -88,6 +88,9 @@
                 var select = $(this);
                 if (select.attr('data-name') === 'catalog') {
                     // element
+                    row.find('select[data-name="element"]').val(0);
+                    row.find('select[data-name="type"]').val(0);
+                    
                     row.find('select[data-name="element"] option').each(function() {
                         var option = $(this);
                         option.addClass('hidden_option');
@@ -101,6 +104,7 @@
                 }
                 if (select.attr('data-name') === 'element') {
                     // type
+                    row.find('select[data-name="type"]').val(0);
                     row.find('select[data-name="type"] option').each(function() {
                         var option = $(this);
                         option.addClass('hidden_option');
