@@ -102,7 +102,6 @@
                     .attr("value", '0')
                     .text('-')
                     .appendTo($result);
-            console.log(this.items);
             $.each(this.items, function(index, item) {
                 var value = valueField ? item[valueField] : index,
                     text = textField ? item[textField] : item;

@@ -25,7 +25,7 @@
         },
 
         _createTextArea: function() {
-            return $("<textarea>").prop("readonly", !!this.readOnly);
+            return $("<textarea>").prop("readonly", !!this.readOnly).attr('data-name', this.name);
         }
     });
 
