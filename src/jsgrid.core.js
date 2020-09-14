@@ -131,7 +131,7 @@
                 }
             });
             row.find('select').each(function() {
-                $(this).change();
+                // $(this).change();
             });
             
         },
