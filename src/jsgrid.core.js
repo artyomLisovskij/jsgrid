@@ -1360,7 +1360,7 @@
             });
             
             if (returned.item) {
-                insertingItem = returned.insertingItem;
+                insertingItem = returned.item;
             }
             var args = {};
             if (returned.args) {

@@ -100,8 +100,7 @@
               clearTimeout(indexTimer);
               indexTimer = setTimeout(function () {
                 grid.onItemUpdated({item: editItem});
-                console.log('update');
-              }, 500);
+              }, 700);
             })
             row.find('select').change(function() {
                 var select = $(this);
@@ -1367,7 +1366,7 @@
             });
             
             if (returned.item) {
-                insertingItem = returned.insertingItem;
+                insertingItem = returned.item;
             }
             var args = {};
             if (returned.args) {
