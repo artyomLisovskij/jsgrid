@@ -92,6 +92,7 @@
             var saveStartStateEditRow = JSON.parse(JSON.stringify(args.item));
             var editItem = Object.assign(args.item);
             var grid = this;
+            var isInitRender = true;
 
             var indexTimer = -1;
             row.find('textarea').on('input', function () {
@@ -104,26 +105,29 @@
             })
             row.find('select').change(function() {
                 var select = $(this);
-                if (select.prop('multiple')) {
-                  try {
-                    var MultiselectField = (grid.fields.find(function (field) {
-                        return field.type === "multiselect"
-                    }));                    
-                    editItem[select.attr('data-name')] = select
-                      .val()
-                      .map(MultiselectField._wordToCode.bind(MultiselectField));
-                  } catch (e) {
-                    console.error('no multiselect or unexpected _wordToCode func');
-                  }
-                } else {
-                  if (isNaN(+select.val())) {
-                    editItem[select.attr('data-name')] = select.val();
-                  } else {
-                    editItem[select.attr('data-name')] = Number(select.val());
-                  }
-                }
-                grid.onItemUpdated({item: editItem});
 
+                if (!isInitRender) {
+                  if (select.prop('multiple')) {
+                    try {
+                      var MultiselectField = (grid.fields.find(function (field) {
+                          return field.type === "multiselect"
+                      }));                    
+                      editItem[select.attr('data-name')] = select
+                        .val()
+                        .map(MultiselectField._wordToCode.bind(MultiselectField));
+                    } catch (e) {
+                      console.error('no multiselect or unexpected _wordToCode func');
+                    }
+                  } else {
+                    if (isNaN(+select.val())) {
+                      editItem[select.attr('data-name')] = select.val();
+                    } else {
+                      editItem[select.attr('data-name')] = Number(select.val());
+                    }
+                  }
+                  grid.onItemUpdated({item: editItem});
+                }
+                
                 if (select.attr('data-name') === 'catalog') {
                     // element
                     row.find('select[data-name="element"] option').each(function() {
@@ -167,10 +171,10 @@
             row.find('.jsgrid-cancel-edit-button').click(function () {
               grid.onItemUpdated({item: saveStartStateEditRow});
             })
-            /*row.find('select').each(function() {
+            row.find('select').each(function() {
                 $(this).change();
-            });*/
-            
+            });
+            isInitRender = false;
         },
         rowDoubleClick: $.noop,
 
