@@ -100,18 +100,83 @@
             row.find('select').change(function() {
                 var select = $(this);
 
-                if (!isInitRender) {
-                  if (select.prop('multiple')) {
+                if (select.attr('data-name') === 'catalog') {
+                    // element
+                    row.find('select[data-name="element"] option').each(function() {
+                        var option = $(this);
+                        option.addClass('hidden_option');
+                        if (option.attr('data-parent')) {
+                            if (option.attr('data-parent').split(',').includes(select.val())) {
+                                option.removeClass('hidden_option');
+                            }
+                        }
+                    })
+                    if (!isInitRender) {
+                      editItem["element"] = 0;
+                      editItem["type"] = 0;
+                      editItem["material"] = [];
+                      row.find('select[data-name="element"]').val(0);
+                      row.find('select[data-name="type"]').val(0);
+                      row.find('select[data-name="material"]').val(0);
+
+                      row.find('select[data-name="type"] option').each(function () {
+                        $(this).addClass('hidden_option');
+                      });
+                      row.find('select[data-name="material"] option').each(function () {
+                        $(this).remove();
+                      });;
+                      //row.find('select[data-name="material"]').trigger('change');
+                    }
+                }
+                if (select.attr('data-name') === 'element') {
+                    // type
+                    row.find('select[data-name="type"] option').each(function() {
+                        var option = $(this);
+                        option.addClass('hidden_option');
+                        if (option.attr('data-parent')) {
+                            if (option.attr('data-parent').split(',').includes(select.val())) {
+                                option.removeClass('hidden_option');
+                            }
+                        }
+                    })
+                    if (!isInitRender) {
+                      editItem["type"] = 0;
+                      editItem["material"] = [];
+
+                      row.find('select[data-name="type"]').val(0);
+                      row.find('select[data-name="material"]').val(0);
+
+                      row.find('select[data-name="material"] option').each(function () {
+                        $(this).remove();
+                      });
+                      //row.find('select[data-name="material"]').trigger('change');
+                    }
+                }
+                if (select.attr('data-name') === 'type') {
+                    // material
                     try {
                       var MultiselectField = (grid.fields.find(function (field) {
-                          return field.type === "multiselect"
-                      }));                    
-                      editItem[select.attr('data-name')] = select
-                        .val()
-                        .map(MultiselectField._wordToCode.bind(MultiselectField));
+                        return field.type === "multiselect"
+                      }));
+                      MultiselectField.renderOptionsForParent(
+                        row.find('select[data-name="material"]'),
+                        select.val()
+                      );
+                      if(!isInitRender) {
+                        editItem["material"] = [];
+
+                        row.find('select[data-name="material"]').val(0);
+                        //row.find('select[data-name="material"]').trigger('change');
+                      };
                     } catch (e) {
-                      console.error('no multiselect or unexpected _wordToCode func');
+                      console.error('no multiselect field or no renderOptionsForParant func', e);
                     }
+                }
+                if (!isInitRender) {
+                  if (select.prop('multiple')) {              
+                    editItem[select.attr('data-name')] = select
+                      .val()
+                      .map(Number);
                   } else {
                     if (isNaN(+select.val())) {
                       editItem[select.attr('data-name')] = select.val();
@@ -120,46 +185,6 @@
                     }
                   }
                   grid.onItemUpdated({item: editItem});
-                }
-                
-                if (select.attr('data-name') === 'catalog') {
-                    // element
-                    row.find('select[data-name="element"] option').each(function() {
-                        var option = $(this);
-                        option.addClass('hidden_option');
-                        if (option.attr('data-parent')) {
-                            if (option.attr('data-parent').split().includes(select.val())) {
-                                option.removeClass('hidden_option');
-                            }
-                        }
-                    })
-                    //row.find('select[data-name="element"]').val(0);
-                }
-                if (select.attr('data-name') === 'element') {
-                    // type
-                    row.find('select[data-name="type"] option').each(function() {
-                        var option = $(this);
-                        option.addClass('hidden_option');
-                        if (option.attr('data-parent')) {
-                            if (option.attr('data-parent').split().includes(select.val())) {
-                                option.removeClass('hidden_option');
-                            }
-                        }
-                    })
-                    //row.find('select[data-name="type"]').val(0);
-                }
-                if (select.attr('data-name') === 'type') {
-                    // material
-                    row.find('select[data-name="material"] option').each(function() {
-                        var option = $(this);
-                        option.addClass('hidden_option');
-                        if (option.attr('data-parent')) {
-                            if (option.attr('data-parent').split().includes(select.val())) {
-                                option.removeClass('hidden_option');
-                            }
-                        }
-                    })
-                    //row.find('select[data-name="material"]').val(0);
                 }
             });
             row.find('.jsgrid-cancel-edit-button').click(function () {
