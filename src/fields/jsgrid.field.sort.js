@@ -9,6 +9,10 @@
     Buttons.prototype = new Field({
         filtering: false,
         editing: false,
+        
+        sorter: function (i,ii) {
+          return i - ii;
+        },
         insertTemplate: function() {
             if(!this.inserting)
                 return "";
@@ -40,7 +44,7 @@
             var grid = this._grid;
             var $result = [
                 $("<span class='arrow'>Вверх</span>").on("click", function(e) {
-                    item.order_mark = value + 1;
+                    item.order_mark = +value + 1;
                     grid.updateItem(item);
                     grid.sort('order_mark', 'desc');
                     e.stopPropagation();

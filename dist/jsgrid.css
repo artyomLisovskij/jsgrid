@@ -124,3 +124,17 @@
 .jsgrid-pager-page {
     padding: .2em .6em;
 }
+
+.btnsCell {
+    width: 69px !important;
+}
+
+.multiselect {
+    width: 204px !important;
+    max-width: 204px !important;
+}
+
+.multiselectWrap {
+    display: flex;
+    justify-content: center;
+}

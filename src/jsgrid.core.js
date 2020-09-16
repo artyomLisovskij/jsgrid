@@ -101,7 +101,6 @@
                 var select = $(this);
 
                 if (select.attr('data-name') === 'catalog') {
-                    // element
                     row.find('select[data-name="element"] option').each(function() {
                         var option = $(this);
                         option.addClass('hidden_option');
@@ -129,7 +128,6 @@
                     }
                 }
                 if (select.attr('data-name') === 'element') {
-                    // type
                     row.find('select[data-name="type"] option').each(function() {
                         var option = $(this);
                         option.addClass('hidden_option');
@@ -191,7 +189,7 @@
               grid.onItemUpdated({item: saveStartStateEditRow});
             })
             row.find('select').each(function() {
-                $(this).change();
+              $(this).change();
             });
             isInitRender = false;
         },
