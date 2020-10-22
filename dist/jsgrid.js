@@ -143,6 +143,13 @@
                             }
                         }
                     })
+                    var MultiselectField = (grid.fields.find(function (field) {
+                      return field.type === "multiselect"
+                    }));
+                    MultiselectField.renderOptionsForParent(
+                      row.find('select[data-name="material"]'),
+                      select.val()
+                    );
                     if (!isInitRender) {
                       editItem["type"] = 0;
                       editItem["material"] = [];
@@ -150,34 +157,34 @@
                       row.find('select[data-name="type"]').val(0);
                       row.find('select[data-name="material"]').val(0);
 
-                      row.find('select[data-name="material"] option').each(function () {
-                        $(this).remove();
-                      });
+                      //row.find('select[data-name="material"] option').each(function () {
+                      //  $(this).remove();
+                      //});
                       //row.find('select[data-name="material"]').trigger('change');
                     }
                 }
-                if (select.attr('data-name') === 'type') {
-                    // material
-                    try {
-                      var MultiselectField = (grid.fields.find(function (field) {
-                        return field.type === "multiselect"
-                      }));
-                      MultiselectField.renderOptionsForParent(
-                        row.find('select[data-name="material"]'),
-                        select.val()
-                      );
-                      if(!isInitRender) {
-                        editItem["material"] = [];
+                //if (select.attr('data-name') === 'type') {
+                //    // material
+                //    try {
+                //      var MultiselectField = (grid.fields.find(function (field) {
+                //        return field.type === "multiselect"
+                //      }));
+                //      MultiselectField.renderOptionsForParent(
+                //        row.find('select[data-name="material"]'),
+                //        select.val()
+                //      );
+                //      if(!isInitRender) {
+                //        editItem["material"] = [];
 
-                        row.find('select[data-name="material"]').val(0);
-                        //row.find('select[data-name="material"]').trigger('change');
-                      };
-                    } catch (e) {
-                      console.error('no multiselect field or no renderOptionsForParant func', e);
-                    }
-                }
+                //        row.find('select[data-name="material"]').val(0);
+                //        //row.find('select[data-name="material"]').trigger('change');
+                //      };
+                //    } catch (e) {
+                //      console.error('no multiselect field or no renderOptionsForParant func', e);
+                //    }
+                //}
                 if (!isInitRender) {
-                  if (select.prop('multiple')) {              
+                  if (select.prop('multiple')) {
                     editItem[select.attr('data-name')] = select
                       .val()
                       .map(Number);
