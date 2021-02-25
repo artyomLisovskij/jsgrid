@@ -11,6 +11,9 @@
     "author": "Artem Tabalin",
     "license": "MIT",
     "main": "dist/jsgrid.js",
+    "scripts": {
+      "start": "yarn grunt"
+    },
     "directories": {
         "test": "tests"
     },

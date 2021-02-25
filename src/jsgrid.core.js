@@ -551,6 +551,16 @@
 
         _createBody: function() {
             var $content = this._content = $("<tbody>");
+            if(this.draggable) {
+              $content.on('dragover', _.throttle((function (e) {
+                if(e.target.closest('tr') != this.draggableEl[0]) {
+                  this._content.find('.selectForDrop').removeClass('selectForDrop')
+                  e.target.closest('tr').classList.add('selectForDrop');
+                }
+
+                e.preventDefault();
+              }).bind(this), 300))
+            }
 
             var $bodyGrid = this._bodyGrid = $("<table>").addClass(this.tableClass)
                 .append($content);
@@ -727,6 +737,33 @@
                 $result = $("<tr>");
                 this._renderCells($result, item);
             }
+
+            if(this.draggable) {
+              $result.attr('data-index', itemIndex);
+              $result.attr('draggable', 'true');
+
+              $result.on('dragstart', (function() {
+                this.draggableEl = $result.closest('tr');
+              }).bind(this))
+              $result.on('dragend', (function(e) {
+                var target = e.target;
+                const selected = this._content.find('.selectForDrop');
+
+                selected.removeClass('selectForDrop')
+
+                this.moveItemOfIndexToIndex({
+                  of: this.draggableEl[0].dataset.index,
+                  to: selected[0].dataset.index
+                })
+                this.draggableEl = null;
+
+                console.log($result, this, selected[0], target);
+              }).bind(this))
+            }
+
+            $result.on('drop', function(e) {
+              e.preventDefault();
+            })
 
             $result.addClass(this._getRowClasses(item, itemIndex))
                 .data(JSGRID_ROW_DATA_KEY, item)
@@ -1374,6 +1411,58 @@
                 field: sortingParams.sortField,
                 order: sortingParams.sortOrder
             };
+        },
+
+        afterMove: function(){},
+        beforeMove: function(){},
+        moveItemOfIndexToIndex: function(data) {
+          const of      = data.of;
+          const to      = data.to;
+          const order   = this.getSorting().order;
+
+          this.afterMove({
+            ofElem: this.data[of],
+            toElem: this.data[to],
+            order: order
+          });
+
+          console.log(this.data);
+          if(to - of !== 1) {
+            for(
+              var t=Math.min(of,to);
+              t<=Math.max(of,to) +
+                ((of < to) ? -1 : 0);
+              t++
+            ) {
+              console.log(this.data[t]);
+              this.updateItem(
+                  this.data[t],
+                  Object.assign(Object.create(this.data[t]), {
+                  order_mark: this.data[t].order_mark +
+                    (((of < to && order === 'asc') || (of > to) && order === 'desc') ?
+                    -1 : 1)
+                })
+              )
+            }
+            this.updateItem(this.data[of], Object.assign(
+              Object.create(this.data[of]),
+              {
+                order_mark: this.data[to].order_mark +
+                ((order === 'asc') ?
+                -1 : 1)
+              }
+            ))
+          }
+
+          console.log(this.data);
+
+          this.sort({ field: "order_mark", order: order });
+
+          this.beforeMove({
+            ofElem: this.data[of],
+            toElem: this.data[to],
+            order: order
+          });
         },
 
         clearFilter: function() {
