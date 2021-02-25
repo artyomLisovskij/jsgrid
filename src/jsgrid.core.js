@@ -1420,7 +1420,7 @@
           const to      = data.to;
           const order   = this.getSorting().order;
 
-          this.afterMove({
+          this.beforeMove({
             ofElem: this.data[of],
             toElem: this.data[to],
             order: order
@@ -1458,7 +1458,7 @@
 
           this.sort({ field: "order_mark", order: order });
 
-          this.beforeMove({
+          this.afterMove({
             ofElem: this.data[of],
             toElem: this.data[to],
             order: order
