@@ -4,6 +4,14 @@
  * Licensed under  ()
  */
 
+.jsGrid tbody tr,
+#jsGrid tbody tr {
+  border-top: solid 2px transparent;
+}
+.jsGrid tbody tr.selectForDrop,
+#jsGrid tbody tr.selectForDrop {
+  border-top: solid 2px red;
+}
 .jsgrid {
     position: relative;
     overflow: hidden;
