@@ -740,6 +740,7 @@
 
             if(this.draggable) {
               $result.attr('data-index', itemIndex);
+              $result.attr('data-id', this.data[itemIndex].id);
               $result.attr('draggable', 'true');
 
               $result.on('dragstart', (function() {
