@@ -559,7 +559,7 @@
             var $content = this._content = $("<tbody>");
             if(this.draggable) {
               $content.on('dragover', _.throttle((function (e) {
-                if(e.target.closest('tr') != this.draggableEl[0]) {
+                if(this.draggableEl && e.target.closest('tr') != this.draggableEl[0]) {
                   this._content.find('.selectForDrop').removeClass('selectForDrop')
                   e.target.closest('tr').classList.add('selectForDrop');
                 }
@@ -749,8 +749,11 @@
               $result.attr('data-id', this.data[itemIndex].id);
               $result.attr('draggable', 'true');
 
-              $result.on('dragstart', (function() {
-                this.draggableEl = $result.closest('tr');
+              $result.on('dragstart', (function(e) {
+                this.draggableEl = $(e.target);
+                this.draggableEl.addClass('draggable');
+
+                console.log(this.draggableEl);
               }).bind(this))
               $result.on('dragend', (function(e) {
                 var target = e.target;
@@ -762,6 +765,8 @@
                   of: this.draggableEl[0].dataset.index,
                   to: selected[0].dataset.index
                 })
+
+                this.draggableEl.removeClass('draggable');
                 this.draggableEl = null;
 
                 console.log($result, this, selected[0], target);

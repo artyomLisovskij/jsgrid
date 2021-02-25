@@ -6,6 +6,9 @@
 #jsGrid tbody tr.selectForDrop {
   border-top: solid 2px red;
 }
+.draggable + tr.selectForDrop {
+  border-top: unset !important;
+}
 .jsgrid {
     position: relative;
     overflow: hidden;
